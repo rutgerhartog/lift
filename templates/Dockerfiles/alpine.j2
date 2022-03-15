@@ -1,0 +1,39 @@
+FROM alpine:{{ yaml_data.spec.base.version }} AS curl
+
+RUN apk add -U curl
+
+USER 1000
+
+{% for fetch_job in yaml_data.spec.fetch %}
+RUN curl -L {{ fetch_job.url }} --output {{ fetch_job.path }}
+{% endfor %}
+
+
+
+FROM alpine:{{ yaml_data.spec.base.version }}
+
+{% for fetch_job in yaml_data.spec.fetch %}
+COPY --from=curl {{ fetch_job.path }} {{ fetch_job.path }}
+{% endfor %}
+
+LABEL org.opencontainers.image.created {{ build_date }}
+LABEL org.opencontainers.image.authors {{ yaml_data.metadata.labels.authors | join (', ') }}
+LABEL org.opencontainers.image.url ""
+LABEL org.opencontainers.image.documentation ""
+LABEL org.opencontainers.image.source ""
+LABEL org.opencontainers.image.version "0.1.0"
+LABEL org.opencontainers.image.revision "not set"
+LABEL org.opencontainers.image.vendor ""
+LABEL org.opencontainers.image.licenses "Apache 2.0"
+LABEL org.opencontainers.image.ref.name ""
+LABEL org.opencontainers.image.title "x-proxy"
+LABEL org.opencontainers.image.description "An X server proxy"
+LABEL org.opencontainers.image.base.digest "c74f1b116678"
+LABEL org.opencontainers.image.base.name "registry.docker.io/_/alpine"
+RUN apk add -U {{ yaml_data.spec.packages | join(" ") }}
+
+COPY init /usr/local/bin/init
+
+RUN chmod +x /usr/local/bin/init
+
+ENTRYPOINT ["init"]

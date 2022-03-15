@@ -1,0 +1,17 @@
+metadata:
+  repo: localhost:5001
+  name: file-manager
+  tags:
+  - latest
+spec:
+  base:
+    name: alpine ## alpine or debian
+    version: 3.15
+  packages:
+    - dbus-x11
+    - faenza-icon-theme
+    - thunar
+    - ttf-open-fonts
+  entrypoint: |
+    #!/bin/sh
+    DISPLAY=x11:0.0 dbus-launch thunar
